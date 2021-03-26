@@ -1,0 +1,14 @@
+{
+    "huts": [
+        {
+            "name": "Cabane de l'A Neuve",
+            "coordinates": ["7.683333", "45.948889"],
+            "tel": "+41 27 783 24 24",
+            "email": "info@aneuve.ch"
+            "website": "https://www.aneuve.ch",
+            "country": "CH"
+        }
+    ]
+}
+
+
