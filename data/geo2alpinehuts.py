@@ -19,22 +19,32 @@ def chain_get(prop, chain):
 
 def convert_feature(feature):
     data = {}
-    main_properties = []
     properties = feature.get('properties', None)
     if properties:
         data['email'] = chain_get(properties, ['contanct:email', 'email'])
         data['website'] = chain_get(properties, ['contact:website', 'website', 'website2', 'operator:website'])
+        data['phone'] = chain_get(properties, ['contact:phone', 'phone'])
+        data['mobile'] = chain_get(properties, ['contact:mobile', 'phone:mobile'])
         data['name'] = chain_get(properties, ['name', 'reg_name', 'official_name', 'short_name'])
-        """
-        data['name'] = properties.get('name', None)
-        # Checking for name in different languages
-        """
-        for prop in main_properties:
-            data[prop] = properties.get(prop, None)
+        if data['name'] == None:
+            print(properties)
+        data['facilities'] = {}
+        # Possible properties
+        for key in properties.keys():
+            # Checking for name in different languages
+            if key.startswith('name:'):
+                try:
+                    data['names'][key[5:]] = properties[key]
+                except KeyError:
+                    data['names'] = {key[5:]: properties[key]}
+            # Facilities
+            elif key in ['shower', 'showers', 'toilet', 'internet_access', 'restaurant', 'breakfast', 'diner', 'lunch']:
+                data['facilities'][key] = properties[key]
+
         # Extended properties
         #data['extended'] = {
         for k in properties.keys():
-            if k not in main_properties and k not in new_props:
+            if k not in new_props:
                 print(k)
                 new_props.append(k)
 
