@@ -23,12 +23,13 @@ def convert_feature(feature):
     if properties:
         data['email'] = chain_get(properties, ['contanct:email', 'email'])
         data['website'] = chain_get(properties, ['contact:website', 'website', 'website2', 'operator:website'])
-        data['phone'] = chain_get(properties, ['contact:phone', 'phone'])
+        data['phone'] = chain_get(properties, ['contact:phone', 'phone', 'telephone'])
         data['mobile'] = chain_get(properties, ['contact:mobile', 'phone:mobile'])
         data['name'] = chain_get(properties, ['name', 'reg_name', 'official_name', 'short_name'])
-        if data['name'] == None:
-            print(properties)
+        data['ele'] = chain_get(properties, ['elevation', 'elev', 'ele'])
+        # Enhanced data
         data['facilities'] = {}
+        data['addr'] = {}
         # Possible properties
         for key in properties.keys():
             # Checking for name in different languages
@@ -40,6 +41,10 @@ def convert_feature(feature):
             # Facilities
             elif key in ['shower', 'showers', 'toilet', 'internet_access', 'restaurant', 'breakfast', 'diner', 'lunch']:
                 data['facilities'][key] = properties[key]
+            # Address
+            elif key.startswith('addr:'):
+                data['addr'][key[5:]] = properties[key]
+
 
         # Extended properties
         #data['extended'] = {
