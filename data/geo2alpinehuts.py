@@ -21,12 +21,14 @@ def convert_feature(feature):
     data = {}
     properties = feature.get('properties', None)
     if properties:
+        data['external_id'] = {'osm': properties['@id']}
         data['email'] = chain_get(properties, ['contanct:email', 'email'])
         data['website'] = chain_get(properties, ['contact:website', 'website', 'website2', 'operator:website'])
         data['phone'] = chain_get(properties, ['contact:phone', 'phone', 'telephone'])
         data['mobile'] = chain_get(properties, ['contact:mobile', 'phone:mobile'])
         data['name'] = chain_get(properties, ['name', 'reg_name', 'official_name', 'short_name'])
         data['ele'] = chain_get(properties, ['elevation', 'elev', 'ele'])
+        data['beds'] = chain_get(properties, ['beds', 'capacity:beds'])
         # Enhanced data
         data['facilities'] = {}
         data['addr'] = {}
@@ -45,14 +47,12 @@ def convert_feature(feature):
             elif key.startswith('addr:'):
                 data['addr'][key[5:]] = properties[key]
 
-
-        # Extended properties
-        #data['extended'] = {
+        """
         for k in properties.keys():
             if k not in new_props:
                 print(k)
                 new_props.append(k)
-
+        """
     # Adding the geolocation. For now derived from middle
     data['coordinates'] = feature['geometry']['coordinates']
     return data
@@ -68,6 +68,8 @@ def convert_file(file_name):
         for feature in geodata:
             ahdata.append(convert_feature(feature))
         #print(geodata)
+    with open(at_file_name, 'w') as f:
+        json.dump(ahdata, f)
 
 # @TODO make this take infile and outfile as parameter
 def main():
