@@ -1,5 +1,5 @@
 
-function main() {
+function createMap() {
   var map = new mapboxgl.Map({
       container: 'map', // container id
       style: 'mapbox://styles/mapbox/outdoors-v11', // style URL
@@ -21,17 +21,26 @@ function loadHuts(url) {
   return call;
 }
 
-function displayHuts(map) {
+function addHutToMap(hut, map) {
+  // Looping through the huts
+  console.log(hut);
+}
+
+
+function getAndDisplayHuts(map) {
   const dataset = ['at.json'];
   for (let i = 0; i < dataset.length; i++) {
     loadHuts('data/' + dataset[i])
-    .then(data => {
-      addHutsToMap(data, map);
+    .then(huts => {
+      for (let i = 0; i < huts.length;i++) {
+        addHutToMap(huts[i], map);
+      }
     });
+  }
 }
 
 
 document.addEventListener("DOMContentLoaded", () => {
-  const map = main();
-  displayHuts(map);
+  const map = createMap();
+  getAndDisplayHuts(map);
 });
