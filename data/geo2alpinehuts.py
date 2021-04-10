@@ -27,7 +27,7 @@ def convert_feature(feature):
         data['phone'] = chain_get(properties, ['contact:phone', 'phone', 'telephone'])
         data['mobile'] = chain_get(properties, ['contact:mobile', 'phone:mobile'])
         data['name'] = chain_get(properties, ['name', 'reg_name', 'official_name', 'short_name'])
-        data['ele'] = chain_get(properties, ['elevation', 'elev', 'ele'])
+        data['elev'] = chain_get(properties, ['elevation', 'elev', 'ele'])
         data['beds'] = chain_get(properties, ['beds', 'capacity:beds'])
         # Enhanced data
         data['facilities'] = {}
