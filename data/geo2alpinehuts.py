@@ -66,7 +66,10 @@ def convert_file(file_name):
         geodata = json.load(f)
         geodata = geodata['features']
         for feature in geodata:
-            ahdata.append(convert_feature(feature))
+            hut = convert_feature(feature)
+            # Only save huts with a name. This is a good initial filter
+            if hut['name']:
+                ahdata.append(hut)
         #print(geodata)
     with open(at_file_name, 'w') as f:
         json.dump(ahdata, f)
