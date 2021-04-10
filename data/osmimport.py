@@ -43,6 +43,9 @@ def create_ah_feature(ext_feature):
             # Address
             elif key.startswith('addr:'):
                 props['addr'][key[5:]] = ext_props[key]
+        # Adding osm as the source
+        props['sources'] = ['osm']
+
     ah_id = ext_feature['id']  # @TODO make a better id
     ah_feature = geojson.Feature(geometry=ext_feature.geometry, properties=props, id=ah_id)
     return ah_feature
@@ -65,7 +68,7 @@ def standardize_file(file_name):
 
 
 def main():
-    files = ('osm-fr.geojson', )
+    files = ('osm-fr.geojson', 'osm-at.geojson', 'osm-ch.geojson')
     for file_name in files:
         standardize_file(file_name)
 
