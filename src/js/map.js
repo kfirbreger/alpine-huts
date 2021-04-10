@@ -15,7 +15,6 @@ function loadHuts(url) {
   let call = fetch(url)
   .then(resp => resp.json())
   .then(data => {
-    console.log(data);
     return data;
   });
   return call;
@@ -23,12 +22,21 @@ function loadHuts(url) {
 
 function addHutToMap(hut, map) {
   // Looping through the huts
-  console.log(hut);
+  const popup = new mapboxgl.Popup().setText(hut.name);
+ 
+  const marker = document.createElement('div')
+  // @TODO add id
+  // marker.id = ?
+
+  new mapboxgl.Marker()
+    .setLngLat(hut.coordinates)
+    .setPopup(popup)
+    .addTo(map);
 }
 
 
 function getAndDisplayHuts(map) {
-  const dataset = ['at.json'];
+  const dataset = ['fr.json'];
   for (let i = 0; i < dataset.length; i++) {
     loadHuts('data/' + dataset[i])
     .then(huts => {
