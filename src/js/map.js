@@ -15,13 +15,48 @@ function createMap() {
   return map;
 }
 
+function updateMarkers(map, markers, visibleMarkers) {
+  const newMarkers = {};
+  const features = map.querySourceFeatures('frHuts');
+  // Create html for each cluster marker with no marker
+  for (let i = 0; i < features.length; i++) {
+    let props = features[i].properties;
+    // If not in cluster, move on
+    if (!props.cluster) {
+      continue;
+    }
+    const coords = features[i].geometry.coordinates;
+
+    const id = props.cluster_id;
+    let marker = markers[id];
+    if (!marker) {
+      marker = markers[id] = new mapboxgl.Marker().setLngLat(coords);
+    }
+    newMarkers[id] = marker;
+
+    if (!visibleMarkers[id]) {
+      marker.addTo(map);
+    }
+  }
+  // Removing all no longer visible cluster markers
+  for (id in visibleMarkers) {
+    console.log(id);
+    if (!newMarkers[id]) {
+      visibleMarkers[id].remove();
+    }
+  }
+
+  return newMarkers;
+}
+
+
 function loadHutsGeojson() {
   const map = this;  // Clarifies what we are actually working on
   map.addSource('frHuts', {
     type: 'geojson',
     data: 'data/fr.geojson',
     cluster: true,
-    clusterRadius: 50
+    clusterRadius: 150
   });
 
   map.addLayer({
@@ -33,81 +68,16 @@ function loadHutsGeojson() {
   // Objects to keep track of markers in memory and visible
   const markers = {};
   let visibleMarkers = {};
-  function updateMarkers() {
-    const newMarkers = {};
-    const features = map.querySourceFeatures('frHuts');
-    // Create html for each cluster marker with no marker
-    for (let i = 0; i < features.length; i++) {
-      const coords = features[i].geometry.coordinates;
-      let props = features[i].properties;
-      // If not in cluster, move on
-      if (!props.cluster) {
-        continue;
-      }
-      const id = props.cluster_id;
-      let marker = markers[id];
-      if (!marker) {
-        marker = markers[id] = new mapboxgl.Marker().setLngLat(coords);
-      }
-      newMarkers[id] = marker;
-
-      if (!visibleMarkers[id]) {
-        marker.addTo(map);
-      }
-    }
-    // Removing all no longer visible cluster markers
-    for (id in visibleMarkers) {
-      if (!newMarkers[id]) {
-        visibleMarkers[id].remove();
-      }
-    }
-
-    visibleMarkers = newMarkers;
-  }
+  visibleMarkers = updateMarkers(map, markers, visibleMarkers);
+  
   // Updating visible markers on each map render
   map.on('render', function() {
     if (!map.isSourceLoaded('frHuts')) {
       return;
     }
-    updateMarkers();
+    visibleMarkers = updateMarkers(map, markers, visibleMarkers);
   });
       
-}
-
-function loadHuts(url) {
-  let call = fetch(url)
-  .then(resp => resp.json())
-  .then(data => {
-    return data;
-  });
-  return call;
-}
-
-function addHutToMap(hut, map) {
-  // Looping through the huts
-  const popup = new mapboxgl.Popup().setText(hut.name);
- 
-  const marker = document.createElement('div')
-  // @TODO add id
-  // marker.id = ?
-
-  new mapboxgl.Marker()
-    .setLngLat(hut.coordinates)
-    .setPopup(popup)
-    .addTo(map);
-}
-
-
-function getAndDisplayHuts(map) {
-  const dataset = ['fr.geojson'];
-  for (let i = 0; i < dataset.length; i++) {
-    loadHuts('data/' + dataset[i])
-   .then(huts => {
-      for (let i = 0; i < huts.length;i++) {
-        addHutToMap(huts[i], map);
-      }
-    });
-  }
 }
 
 
