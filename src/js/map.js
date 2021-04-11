@@ -15,6 +15,7 @@ function createMap() {
   return map;
 }
 
+
 function updateMarkers(map, markers, visibleMarkers) {
   const newMarkers = {};
   const features = map.querySourceFeatures('frHuts');
@@ -30,7 +31,10 @@ function updateMarkers(map, markers, visibleMarkers) {
     const id = props.cluster_id;
     let marker = markers[id];
     if (!marker) {
-      marker = markers[id] = new mapboxgl.Marker().setLngLat(coords);
+      const el = createClusterMarker(props);
+      marker = markers[id] = new mapboxgl.Marker({
+        element: el
+      }).setLngLat(coords);
     }
     newMarkers[id] = marker;
 
@@ -40,7 +44,6 @@ function updateMarkers(map, markers, visibleMarkers) {
   }
   // Removing all no longer visible cluster markers
   for (id in visibleMarkers) {
-    console.log(id);
     if (!newMarkers[id]) {
       visibleMarkers[id].remove();
     }
@@ -50,13 +53,29 @@ function updateMarkers(map, markers, visibleMarkers) {
 }
 
 
+function createClusterMarker(props) {
+  // Calculating size of font and circle
+  const fontSize = props.point_count >= 1000 ? 22 : props.point_count >= 100 ? 20 : props.point_count >= 10 ? 18 : 16;
+  const r = props.point_count >= 1000 ? 50 : props.point_count >= 100 ? 32 : props.point_count >= 10 ? 24 : 18;
+  const r0 = Math.round(r * 0.6);
+  const w = r * 2;
+
+  const html = `<svg width="${w}" height="${w}" viewbox="0 0 ${w} ${w}" text-ancor="middle" style="font: ${fontSize}px sans-serif; display: block">` +
+    `<circle cx="${r}" cy="${r}" r="${r-2}" style="fill:white;stroke:black;stroke-width:1;"/>` +
+    `<text dominant-baseline="central" text-anchor="middle" transform="translate(${r}, ${r})">${props.point_count.toLocaleString()}</text></svg>`
+  const el = document.createElement('div');
+  el.innerHTML = html;
+  return el;
+}
+
+
 function loadHutsGeojson() {
   const map = this;  // Clarifies what we are actually working on
   map.addSource('frHuts', {
     type: 'geojson',
     data: 'data/fr.geojson',
     cluster: true,
-    clusterRadius: 150
+    clusterRadius: 100
   });
 
   map.addLayer({
