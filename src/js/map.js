@@ -77,12 +77,25 @@ function loadHutsGeojson() {
     cluster: true,
     clusterRadius: 100
   });
+  map.loadImage('img/wilderness_hut-18.png', function(error, image) {
+    if (error) {
+      throw error;
+    }
+    map.addImage('hut-marker', image);
 
-  map.addLayer({
-    id: 'fr_markers',
-    type: 'circle',
-    source: 'frHuts',
-    filter: ['!=', 'cluster', true]
+    map.addLayer({
+      id: 'fr_markers',
+      type: 'symbol',
+      source: 'frHuts',
+      filter: ['!=', 'cluster', true],
+      layout: {
+        'icon-image': 'hut-marker',
+        'text-field': ['get', 'name'],
+        'text-offset': [0, 1],
+        'text-anchor': 'top',
+        'text-size': 10
+      }
+    });
   });
   // Objects to keep track of markers in memory and visible
   const markers = {};
