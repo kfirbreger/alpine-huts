@@ -45,7 +45,12 @@ def create_ah_feature(ext_feature):
                 props['addr'][key[5:]] = ext_props[key]
         # Adding osm as the source
         props['sources'] = ['osm']
-
+        # Removing empty fields
+        print(props)
+        for key, value in list(props.items()):
+            if value is None or value == {}:
+                del props[key]
+        print(props)
     ah_id = ext_feature['id']  # @TODO make a better id
     ah_feature = geojson.Feature(geometry=ext_feature.geometry, properties=props, id=ah_id)
     return ah_feature
