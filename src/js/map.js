@@ -12,6 +12,9 @@ function createMap() {
   // @TODO look into this https://docs.mapbox.com/mapbox-gl-js/example/hillshade/
 
   map.on('load', loadHutsGeojson);
+  map.on('click', function(e) {
+    addPopup(e, map);
+  });
   return map;
 }
 
@@ -111,6 +114,57 @@ function loadHutsGeojson() {
   });
       
 }
+
+function markerPopupHtml(props) {
+  // Create the html for the popup, based on the props data
+  let html = `<h3>${props.name}</h3>`
+  console.log(props);
+  // Checking if there is more than just a name
+  if (props.length === 1) {
+    return html;
+  } else {
+    html += '<ul>'
+  }
+  // Adding what is available
+  if (props.website) {
+    html += `<li><a href="${props.website}">Website</a></li>`
+  }
+  if (props.email) {
+    html += `<li>${props.email}</li>`
+  }
+  if (props.phone) {
+    html += `<li>${props.phone}</li>`
+  }
+  if (props.elev) {
+    html += `<li>Elevation: ${props.elev}</li>`
+  }
+  if (props.facilities) {
+    html += `<li>${props.facilities}</li>`
+  }
+  if (props.addr) {
+    html += `<li>${props.addr}</li>`
+  }
+  html += `</ul>`
+  return html
+}
+
+function addPopup(e, map) {
+  const features = map.queryRenderedFeatures(e.point, {
+    layers: ['fr_markers']
+  });
+
+  if (!features.length) {
+    return;
+  }
+
+  const feature = features[0];
+  const html = markerPopupHtml(feature.properties);
+  const popup = new mapboxgl.Popup({offset: [0, -15]})
+  .setLngLat(feature.geometry.coordinates)
+  .setHTML(html)
+  .addTo(map);
+}
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
