@@ -51,7 +51,7 @@ function updateMarkers(map, markers, visibleMarkers) {
       visibleMarkers[id].remove();
     }
   }
-
+  markers = {};
   return newMarkers;
 }
 
@@ -101,7 +101,7 @@ function loadHutsGeojson() {
     });
   });
   // Objects to keep track of markers in memory and visible
-  const markers = {};
+  let markers = {};
   let visibleMarkers = {};
   visibleMarkers = updateMarkers(map, markers, visibleMarkers);
   
@@ -117,29 +117,37 @@ function loadHutsGeojson() {
 
 function markerPopupHtml(props) {
   // Create the html for the popup, based on the props data
-  let html = `<h3>${props.name}</h3>`
+  let html = `<h3 class="text-lg">${props.name}</h3>`
   console.log(props);
   // Checking if there is more than just a name
   if (props.length === 1) {
     return html;
   } else {
-    html += '<ul>'
+    html += '<ul class="list-none">'
   }
   // Adding what is available
   if (props.website) {
-    html += `<li><a href="${props.website}">Website</a></li>`
+    html += `<li class="text-blue-600"><a href="${props.website}">Website</a></li>`
   }
   if (props.email) {
-    html += `<li>${props.email}</li>`
+    html += `<li>&commat;: ${props.email}</li>`
   }
   if (props.phone) {
-    html += `<li>${props.phone}</li>`
+    html += `<li>Tel: ${props.phone}</li>`
   }
   if (props.elev) {
     html += `<li>Elevation: ${props.elev}</li>`
   }
   if (props.facilities) {
-    html += `<li>${props.facilities}</li>`
+    // @TODO mapbox does not completely parse the properties
+    // so that needs to happen here
+    const fac = JSON.parse(props.facilities);
+    html += `<li><div><h4 class="font-bold">facilities</h4><ul class="ml-4">`
+    for  (id in fac) {
+
+      html += `<li>${id}: ${fac[id]}</li>`;
+    }
+    html += `</ul></div></li>`;
   }
   if (props.addr) {
     html += `<li>${props.addr}</li>`
