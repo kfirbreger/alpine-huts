@@ -118,7 +118,6 @@ function loadHutsGeojson() {
 function markerPopupHtml(props) {
   // Create the html for the popup, based on the props data
   let html = `<h3 class="text-base">${props.name}</h3>`
-  console.log(props);
   // Checking if there is more than just a name
   if (props.length === 1) {
     return html;
