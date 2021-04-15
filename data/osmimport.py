@@ -86,7 +86,7 @@ def main():
         else:
             doub += 1
     print("dup:", doub)
-    ah_fc = geojson.FeatureCollection(all_data)
+    ah_fc = geojson.FeatureCollection(clean_data)
     print('all', len(clean_data))
     with open('alpen.geojson', 'w') as f:
         geojson.dump(ah_fc, f)
