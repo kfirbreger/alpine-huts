@@ -46,11 +46,9 @@ def create_ah_feature(ext_feature):
         # Adding osm as the source
         props['sources'] = ['osm']
         # Removing empty fields
-        print(props)
         for key, value in list(props.items()):
             if value is None or value == {}:
                 del props[key]
-        print(props)
     ah_id = ext_feature['id']  # @TODO make a better id
     ah_feature = geojson.Feature(geometry=ext_feature.geometry, properties=props, id=ah_id)
     return ah_feature
@@ -70,12 +68,20 @@ def standardize_file(file_name):
     ah_fc = geojson.FeatureCollection(ah_data)
     with open(ah_filename, 'w') as f:
         geojson.dump(ah_fc, f)
+    print(file_name, len(ah_data))
+    return ah_data
 
 
 def main():
     files = ('osm-fr.geojson', 'osm-at.geojson', 'osm-ch.geojson')
+    all_data = []
     for file_name in files:
-        standardize_file(file_name)
+        all_data.extend(standardize_file(file_name))
+    ah_fc = geojson.FeatureCollection(all_data)
+    print('all', len(all_data))
+    with open('alpen.geojson', 'w') as f:
+        geojson.dump(ah_fc, f)
+
 
 if __name__ == '__main__':
     main()
