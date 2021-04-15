@@ -77,8 +77,17 @@ def main():
     all_data = []
     for file_name in files:
         all_data.extend(standardize_file(file_name))
+    # Removing double entries
+    clean_data = []
+    doub = 0
+    for item in all_data:
+        if item not in clean_data:
+            clean_data.append(item)
+        else:
+            doub += 1
+    print("dup:", doub)
     ah_fc = geojson.FeatureCollection(all_data)
-    print('all', len(all_data))
+    print('all', len(clean_data))
     with open('alpen.geojson', 'w') as f:
         geojson.dump(ah_fc, f)
 
