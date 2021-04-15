@@ -75,6 +75,7 @@ const hutsMap = (function() {
       type: 'geojson',
       data: 'data/alpen.geojson',
       cluster: true,
+      clusterMinPoints: 3,  // Require at least 3 points to form a cluster
       clusterRadius: 100
     });
     map.loadImage('img/wilderness_hut-18.png', function(error, image) {
@@ -110,9 +111,43 @@ const hutsMap = (function() {
         
   }
 
+  function renderPopupFacilities(fac) {
+    let html = `<li><div><h4 class="font-bold">facilities</h4><ul class="ml-4">`
+    for  (id in fac) {
+      html += `<li>${id}: ${fac[id]}</li>`;
+    }
+    html += `</ul></div></li>`;
+    return html;
+  }
+
+  function renderPopupAddress(addr) {
+    console.log(addr);
+    let html = `<li><div><h4 class="font-bold">Address</h4><p class="ml-4">`;
+    if (addr.street && addr.housenumber) {
+      html += `${addr.street} ${addr.housenumber},`;
+    } else if (addr.street) {
+      html += `${addr.street},`;
+    } else if (addr.housenumber) {
+      html += `&num;${addr.housenumber},`;
+    }
+    if (addr.postcode) {
+      html += ` ${addr.postcode}`;
+    }
+    if (addr.city) {
+      html += ` ${addr.city}`;
+    } else if (addr.place) {
+      html += `${addr.place}`;
+    }
+    if (addr.country) {
+      html += `, ${addr.country}`;
+    }
+    html += `</p></div></li>`;
+    return html;
+  }
+
   function markerPopupHtml(props) {
     // Create the html for the popup, based on the props data
-    let html = `<h3 class="text-base">${props.name}</h3>`
+    let html = `<div class="p-2"><h3 class="text-base">${props.name}</h3>`
     // Checking if there is more than just a name
     if (props.length === 1) {
       return html;
@@ -136,24 +171,14 @@ const hutsMap = (function() {
       // @TODO mapbox does not completely parse the properties
       // so that needs to happen here
       const fac = JSON.parse(props.facilities);
-      html += `<li><div><h4 class="font-bold">facilities</h4><ul class="ml-4">`
-      for  (id in fac) {
-
-        html += `<li>${id}: ${fac[id]}</li>`;
-      }
-      html += `</ul></div></li>`;
+      html += renderPopupFacilities(fac);
     }
     if (props.addr) {
       // @TODO see facilities
-      const fac = JSON.parse(props.addr);
-      html += `<li><div><h4 class="font-bold">Address</h4><ul class="ml-4">`
-      for  (id in fac) {
-
-        html += `<li>${id}: ${fac[id]}</li>`;
-      }
-      html += `</ul></div></li>`;
+      const addr = JSON.parse(props.addr);
+      html += renderPopupAddress(addr);
     }
-    html += `</ul>`
+    html += `</ul></div>`
     return html
   }
 
