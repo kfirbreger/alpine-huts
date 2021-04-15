@@ -117,7 +117,7 @@ function loadHutsGeojson() {
 
 function markerPopupHtml(props) {
   // Create the html for the popup, based on the props data
-  let html = `<h3 class="text-lg">${props.name}</h3>`
+  let html = `<h3 class="text-base">${props.name}</h3>`
   console.log(props);
   // Checking if there is more than just a name
   if (props.length === 1) {
@@ -150,7 +150,14 @@ function markerPopupHtml(props) {
     html += `</ul></div></li>`;
   }
   if (props.addr) {
-    html += `<li>${props.addr}</li>`
+    // @TODO see facilities
+    const fac = JSON.parse(props.addr);
+    html += `<li><div><h4 class="font-bold">Address</h4><ul class="ml-4">`
+    for  (id in fac) {
+
+      html += `<li>${id}: ${fac[id]}</li>`;
+    }
+    html += `</ul></div></li>`;
   }
   html += `</ul>`
   return html
