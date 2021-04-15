@@ -21,7 +21,7 @@ function createMap() {
 
 function updateMarkers(map, markers, visibleMarkers) {
   const newMarkers = {};
-  const features = map.querySourceFeatures('frHuts');
+  const features = map.querySourceFeatures('alpenHuts');
   // Create html for each cluster marker with no marker
   for (let i = 0; i < features.length; i++) {
     let props = features[i].properties;
@@ -74,9 +74,9 @@ function createClusterMarker(props) {
 
 function loadHutsGeojson() {
   const map = this;  // Clarifies what we are actually working on
-  map.addSource('frHuts', {
+  map.addSource('alpenHuts', {
     type: 'geojson',
-    data: 'data/fr.geojson',
+    data: 'data/alpen.geojson',
     cluster: true,
     clusterRadius: 100
   });
@@ -89,7 +89,7 @@ function loadHutsGeojson() {
     map.addLayer({
       id: 'fr_markers',
       type: 'symbol',
-      source: 'frHuts',
+      source: 'alpenHuts',
       filter: ['!=', 'cluster', true],
       layout: {
         'icon-image': 'hut-marker',
@@ -107,7 +107,7 @@ function loadHutsGeojson() {
   
   // Updating visible markers on each map render
   map.on('render', function() {
-    if (!map.isSourceLoaded('frHuts')) {
+    if (!map.isSourceLoaded('alpenHuts')) {
       return;
     }
     visibleMarkers = updateMarkers(map, markers, visibleMarkers);
@@ -183,5 +183,4 @@ function addPopup(e, map) {
 
 document.addEventListener("DOMContentLoaded", () => {
   const map = createMap();
-  //getAndDisplayHuts(map);
 });
