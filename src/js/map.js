@@ -65,7 +65,7 @@ const hutsMap = (function() {
       map.addImage('hut-marker', image);
       // Huts markers layer
       map.addLayer({
-        id: 'alpenMarkers',
+        id: 'hutsMarkers',
         type: 'symbol',
         source: 'alpenHuts',
         filter: ['!', ['has', 'point_count']],
@@ -155,7 +155,7 @@ const hutsMap = (function() {
 
   function showPopup(e) {
     const features = map.queryRenderedFeatures(e.point, {
-      layers: ['alpenMarkers']
+      layers: ['hutsMarkers']
     });
 
     if (!features.length) {
@@ -196,8 +196,18 @@ const hutsMap = (function() {
     // Cluster point clicking
     map.on('click', 'clusters', clusterClick);
     // Adding popup information
-    map.on('click', function(e) {
-      showPopup(e);
+    map.on('click', showPopup);
+    map.on('mouseenter', 'clusters', function () {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'clusters', function () {
+      map.getCanvas().style.cursor = '';
+    });
+    map.on('mouseenter', 'hutsMarkers', function () {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'hutsMarkers', function () {
+      map.getCanvas().style.cursor = '';
     });
   }
 
