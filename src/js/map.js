@@ -17,78 +17,58 @@ const hutsMap = (function() {
     
   }
 
-
-  function updateMarkers(visibleMarkers) {
-    const newMarkers = {};
-    const features = map.querySourceFeatures('alpenHuts');
-    // Create html for each cluster marker with no marker
-    for (let i = 0; i < features.length; i++) {
-      let props = features[i].properties;
-      // If not in cluster, move on
-      if (!props.cluster) {
-        continue;
-      }
-      const coords = features[i].geometry.coordinates;
-
-      const id = props.cluster_id;
-      let marker = markers[id];
-      if (!marker) {
-        const el = createClusterMarker(props);
-        marker = markers[id] = new mapboxgl.Marker({
-          element: el
-        }).setLngLat(coords);
-      }
-      newMarkers[id] = marker;
-
-      if (!visibleMarkers[id]) {
-        marker.addTo(map);
-      }
-    }
-    // Removing all no longer visible cluster markers
-    for (id in visibleMarkers) {
-      if (!newMarkers[id]) {
-        visibleMarkers[id].remove();
-      }
-    }
-    return newMarkers;
-  }
-
-
-  function createClusterMarker(props) {
-    // Calculating size of font and circle
-    const fontSize = props.point_count >= 1000 ? 22 : props.point_count >= 100 ? 20 : props.point_count >= 10 ? 18 : 16;
-    const r = props.point_count >= 1000 ? 50 : props.point_count >= 100 ? 32 : props.point_count >= 10 ? 24 : 18;
-    const r0 = Math.round(r * 0.6);
-    const w = r * 2;
-
-    const html = `<svg width="${w}" height="${w}" viewbox="0 0 ${w} ${w}" text-ancor="middle" style="font: ${fontSize}px sans-serif; display: block">` +
-      `<circle cx="${r}" cy="${r}" r="${r-2}" style="fill:white;stroke:black;stroke-width:1;"/>` +
-      `<text dominant-baseline="central" text-anchor="middle" transform="translate(${r}, ${r})">${props.point_count.toLocaleString()}</text></svg>`
-    const el = document.createElement('div');
-    el.innerHTML = html;
-    return el;
-  }
-
-
   function loadHutsGeojson() {
     map.addSource('alpenHuts', {
       type: 'geojson',
       data: 'data/alpen.geojson',
       cluster: true,
-      clusterMinPoints: 3,  // Require at least 3 points to form a cluster
-      clusterRadius: 100
+      clusterRadius: 75,
+      clusterMaxZoom: 14
+    });
+    // cluster layer
+    map.addLayer({
+      id: 'clusters',
+      type: 'circle',
+      source: 'alpenHuts',
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': '#fefefe',
+        'circle-radius': [
+          'step',
+          ['get', 'point_count'],
+          16,
+          10,
+          18,
+          100,
+          20,
+          1000,
+          22
+        ],
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#111'
+      }
+    });
+    map.addLayer({
+      id: 'cluster-count',
+      type: 'symbol',
+      source: 'alpenHuts',
+      filter: ['has', 'point_count'],
+      layout: {
+        'text-field': '{point_count_abbreviated}',
+        'text-size': 12
+      }
     });
     map.loadImage('img/wilderness_hut-18.png', function(error, image) {
       if (error) {
         throw error;
       }
       map.addImage('hut-marker', image);
-
+      // Huts markers layer
       map.addLayer({
         id: 'alpenMarkers',
         type: 'symbol',
         source: 'alpenHuts',
-        filter: ['!=', 'cluster', true],
+        filter: ['!', ['has', 'point_count']],
         layout: {
           'icon-image': 'hut-marker',
           'text-field': ['get', 'name'],
@@ -97,18 +77,9 @@ const hutsMap = (function() {
           'text-size': 10
         }
       });
+      
+
     });
-    // Objects to keep track of markers in memory and visible
-    let visibleMarkers = updateMarkers({});
-    
-    // Updating visible markers on each map render
-    map.on('render', function() {
-      if (!map.isSourceLoaded('alpenHuts')) {
-        return;
-      }
-      visibleMarkers = updateMarkers(visibleMarkers);
-    });
-        
   }
 
   function renderPopupFacilities(fac) {
@@ -182,7 +153,7 @@ const hutsMap = (function() {
     return html
   }
 
-  function addPopup(e) {
+  function showPopup(e) {
     const features = map.queryRenderedFeatures(e.point, {
       layers: ['alpenMarkers']
     });
@@ -199,14 +170,34 @@ const hutsMap = (function() {
     .addTo(map);
   }
 
+  function clusterClick(e) {
+    const features = map.queryRenderedFeatures(e.point, {
+      layers: ['clusters']
+    });
+    const clusterId = features[0].properties.cluster_id;
+    map.getSource('alpenHuts').getClusterExpansionZoom(
+      clusterId,
+      function(err, zoom) {
+        if (err) return;
+
+        map.easeTo({
+          center: features[0].geometry.coordinates,
+          zoom: zoom
+        });
+      }
+    );
+  }
+
   function run() {
     // Collects everything to one external call
     createMap();
     // Loading hut information
     map.on('load', loadHutsGeojson);
+    // Cluster point clicking
+    map.on('click', 'clusters', clusterClick);
     // Adding popup information
     map.on('click', function(e) {
-      addPopup(e);
+      showPopup(e);
     });
   }
 
