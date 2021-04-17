@@ -1,5 +1,5 @@
 import geojson
-
+import geohash
 
 def chain_get(prop, chain):
     """
@@ -20,12 +20,17 @@ def create_ah_feature(ext_feature):
         if props['name'] is None:
             return None
         props['external_id'] = {'osm': ext_feature['id']}
+        props['description'] = ext_props.get('description', None)
         props['email'] = chain_get(ext_props, ['contanct:email', 'email'])
         props['website'] = chain_get(ext_props, ['contact:website', 'website', 'website2', 'operator:website'])
         props['phone'] = chain_get(ext_props, ['contact:phone', 'phone', 'telephone'])
         props['mobile'] = chain_get(ext_props, ['contact:mobile', 'phone:mobile'])
         props['elev'] = chain_get(ext_props, ['elevation', 'elev', 'ele'])
-        props['beds'] = chain_get(ext_props, ['beds', 'capacity:beds'])
+        props['beds'] = chain_get(ext_props, ['beds', 'capacity:beds', 'capacity'])
+        # Operator data
+        props['operator'] = chain_get(ext_props, ['operator'])
+        # Reservation status
+        props['reservation'] = chain_get(ext_props, ['reservation'])
         # Enhanced props
         props['facilities'] = {}
         props['addr'] = {}
@@ -49,7 +54,8 @@ def create_ah_feature(ext_feature):
         for key, value in list(props.items()):
             if value is None or value == {}:
                 del props[key]
-    ah_id = ext_feature['id']  # @TODO make a better id
+    print(ext_feature.geometry) 
+    ah_id = geohash.encode(ext_feature.geometry.coordinates[1], ext_feature.geometry.coordinates[0])
     ah_feature = geojson.Feature(geometry=ext_feature.geometry, properties=props, id=ah_id)
     return ah_feature
 
@@ -73,7 +79,7 @@ def standardize_file(file_name):
 
 
 def main():
-    files = ('osm-fr.geojson', 'osm-at.geojson', 'osm-ch.geojson')
+    files = ('osm-fr.geojson', 'osm-at.geojson', 'osm-ch.geojson', 'osm-wilderness_huts.geojson')
     all_data = []
     for file_name in files:
         all_data.extend(standardize_file(file_name))
